@@ -1,4 +1,5 @@
 const playBoard = document.querySelector(".play-board");
+const idPlay = document.getElementById("play");
 const scoreElement = document.querySelector(".score");
 const highScoreElement = document.querySelector(".high-score");
 const difficultySelect = document.getElementById("selectDificulty");
@@ -52,6 +53,7 @@ const handleGameOver = () => {
 // Alterar direção da cobra 
 const changeDirection = e =>{
     //console.log("facil",isFacil); 
+    pause = false;
     if (e.key === "ArrowUp" && velocityY != 1){
         velocityX = 0;
         velocityY = -1;
@@ -67,7 +69,7 @@ const changeDirection = e =>{
     }else if(e.key === "p" && isFacil){                
         velocityX = 0;
         velocityY = 0;
-        pause = !pause;        
+        pause = true;        
     }
 }
 
@@ -108,7 +110,9 @@ const initGame = () =>{
     
     snakeBody[0] = [snakeX,snakeY];
     // verificando se a cobra bateu nas bordas
+    
     if (isFacil){
+        playBoard.style.border = "none" ;
         if (snakeX <= 0){
             snakeX = 30;
         }
@@ -122,23 +126,29 @@ const initGame = () =>{
             snakeY = 0;
         }
     }else {
+        playBoard.style.border = "solid 1px #ffffff" ;
         if (snakeX <= 0 || snakeX > 30 || snakeY <= 0 || snakeY > 30 ){
             return gameOver = true;
         }
     }
     
-    
-    for (let i = 0; i< snakeBody.length; i++){
-        html += `<div class="head" style="grid-area: ${snakeBody[i][1]} / ${snakeBody[i][0]}"></div>`;
-        // verifica se a cobra bateu nela mesma
-        if (i !== 0 && snakeBody[0][1] === snakeBody[i][1] && 
-            snakeBody[0][0] === snakeBody[i][0] && !pause && !isFacil){
-                gameOver = true;
+    if (!pause){
+        for (let i = 0; i< snakeBody.length; i++){
+            if (i != 0)
+                html += `<div class="bodySnake" style="grid-area: ${snakeBody[i][1]} / ${snakeBody[i][0]}"></div>`;
+            else 
+                html += `<div class="headSnake" style="grid-area: ${snakeBody[i][1]} / ${snakeBody[i][0]}"></div>`;
                 
+            // verifica se a cobra bateu nela mesma
+            if (i !== 0 && snakeBody[0][1] === snakeBody[i][1] && 
+                snakeBody[0][0] === snakeBody[i][0] && !pause && !isFacil){
+                    gameOver = true;
+                    
+                }
             }
+            playBoard.innerHTML = html;
+            
         }
-        playBoard.innerHTML = html;
-        
     }
     
     updateFoodPosition()
