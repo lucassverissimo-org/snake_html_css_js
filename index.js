@@ -1,3 +1,11 @@
+function mockCobra(){
+    let cobraFake = [];
+    for (let i = 0; i < 900; i++) {        
+        cobraFake.push([5,5]);        
+    }
+    return cobraFake;
+}
+
 const playBoard = document.querySelector(".play-board");
 const idPlay = document.getElementById("play");
 const scoreElement = document.querySelector(".score");
@@ -10,11 +18,12 @@ let gameOver = false;
 let foodX, foodY;
 let snakeX = 5, snakeY= 5;
 let velocityX = 0, velocityY = 0;
-let snakeBody = [];
+let snakeBody = []; //mockCobra();
 let setIntervalId;
 let score = 0;
 let pause = false;
 let isFacil = true;
+
 
 
 // Obter a maior pontuação do local storage
@@ -26,11 +35,15 @@ highScoreElement.innerText = `Melhor pontuação: ${highScore}`;
 const updateFoodPosition = () => {
     let newfoodX = Math.floor(Math.random() * 30) + 1;
     let newfoodY = Math.floor(Math.random() * 30) + 1;    
-
-    // fazer lógica para que a comida não apareça no mesmo lugar da cobra.
-
+    // verificação se a nova comida vai ficar em cima da cobra
+    for (let i = 0; i < snakeBody.length; i++) {        
+        if (snakeBody[i][0] == newfoodX && snakeBody[i][1] == newfoodY){
+            updateFoodPosition();
+            return;
+        }        
+    }
     foodX = newfoodX;
-    foodY = newfoodY;
+    foodY = newfoodY;    
 }
 
 const handleGameOver = () => {    
@@ -39,15 +52,14 @@ const handleGameOver = () => {
     gameOver = false;
     snakeX = 5, snakeY= 5;
     velocityX = 0, velocityY = 0;
-    snakeBody = [];
+    snakeBody = []; //mockCobra();
     score = 0;
     updateFoodPosition();
     setIntervalId = setInterval(initGame, 100);
 }
 
 // Alterar direção da cobra 
-const changeDirection = e =>{
-    //console.log("facil",isFacil); 
+const changeDirection = e =>{    
     pause = false;
     if (e.key === "ArrowUp" && velocityY != 1){
         velocityX = 0;
@@ -69,7 +81,6 @@ const changeDirection = e =>{
 }
 
 // mudar direção quando clicar 
-
 controls.forEach(button => button.addEventListener("click", () => changeDirection({ key: button.dataset.key })));
 
 const initGame = () =>{
@@ -83,6 +94,7 @@ const initGame = () =>{
         difficultySelect.selectedIndex = 0;
     }
     isFacil = difficultySelect.options[difficultySelect.selectedIndex].id == "facil";
+    
     // quando a cobra comer a comida
     if (snakeX === foodX && snakeY === foodY){
         updateFoodPosition();
@@ -104,9 +116,8 @@ const initGame = () =>{
     }
     
     snakeBody[0] = [snakeX,snakeY];
-    // verificando se a cobra bateu nas bordas
-    
-    if (isFacil){
+        
+    if (isFacil){ // libera as paredes
         playBoard.style.border = "none" ;
         if (snakeX <= 0){
             snakeX = 30;
@@ -120,7 +131,8 @@ const initGame = () =>{
         if (snakeY > 30){
             snakeY = 0;
         }
-    }else {
+    }else { // bloqueia as paredes        
+        // verificando se a cobra bateu nas bordas
         playBoard.style.border = "solid 2px #ffffff" ;
         if (snakeX <= 0 || snakeX > 30 || snakeY <= 0 || snakeY > 30 ){
             return gameOver = true;
@@ -135,14 +147,15 @@ const initGame = () =>{
                 html += `<div class="headSnake" style="grid-area: ${snakeBody[i][1]} / ${snakeBody[i][0]}"></div>`;
                 
             // verifica se a cobra bateu nela mesma
-            if (i !== 0 && snakeBody[0][1] === snakeBody[i][1] && 
-                snakeBody[0][0] === snakeBody[i][0] && !pause && !isFacil){
-                    gameOver = true;
-                    
-                }
+            if (!isFacil){
+                if (i !== 0 && snakeBody[0][1] === snakeBody[i][1] && 
+                    snakeBody[0][0] === snakeBody[i][0]){
+                        gameOver = true;
+                    }
+                }                        
             }
+            html += `<div class="headSnake" style="grid-area: ${snakeBody[0][1]} / ${snakeBody[0][0]}"></div>`;
             playBoard.innerHTML = html;
-            
         }
     }
     
