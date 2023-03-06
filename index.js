@@ -121,7 +121,7 @@ const initGame = () =>{
             snakeY = 0;
         }
     }else {
-        playBoard.style.border = "solid 1px #ffffff" ;
+        playBoard.style.border = "solid 2px #ffffff" ;
         if (snakeX <= 0 || snakeX > 30 || snakeY <= 0 || snakeY > 30 ){
             return gameOver = true;
         }

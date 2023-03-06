@@ -54,9 +54,8 @@ body{
 }
 
 .play-board .bodySnake{
-    background: #95aa38;
-    border-color: #ffffff;
-    border-style: outset;
+    background: #95aa38;    
+    border: 1px solid #bdd847;
 }
 
 .controls{
