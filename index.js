@@ -25,15 +25,10 @@ highScoreElement.innerText = `Melhor pontuação: ${highScore}`;
 // Atualizar a posição da comida randomicamente
 const updateFoodPosition = () => {
     let newfoodX = Math.floor(Math.random() * 30) + 1;
-    let newfoodY = Math.floor(Math.random() * 30) + 1;
-    for (let i = snakeBody.length - 1; i > 0; i--){
-        // evitar que a comida seja criada em cima da cobra.
-        if (i !== 0 && newfoodX === snakeBody[i][1] && newfoodY === snakeBody[i][0]){
-            updateFoodPosition();
-        }else {
-            break;
-        }
-    }
+    let newfoodY = Math.floor(Math.random() * 30) + 1;    
+
+    // fazer lógica para que a comida não apareça no mesmo lugar da cobra.
+
     foodX = newfoodX;
     foodY = newfoodY;
 }
