@@ -10,29 +10,54 @@
 </head>
 <body>
     
-    <div class="wrapper">
+    <div class="wrapperGame">
         <div class="game-details">
-            <span class="score">Pontuação: 0</span>
+            <span class="score textDefault">Pontuação: 0</span>
             <span class="difficulty">
-                Dificuldade: 
+                <span class="textDefault">
+                    Dificuldade: 
+                </span>
                 <select id="selectDificulty" onchange="changeDificult()">
                     <option value="easy" id="facil">Facil</option>
                     <option value="easy" id="dificil">Difícil</option>
                 </select>
             </span>
-            <span class="high-score">Melhor Pontuação: 0</span>
+            <span class="high-score textDefault">Melhor Pontuação: 0</span>
         </div>
         
         <div id="play" class="play-board"></div>
-
+        <!--
         <div class="controls">
             <i data-key="ArrowLeft" class="fa-solid fa-arrow-left-long"></i>
             <i data-key="ArrowUp" class="fa-solid fa-arrow-up-long"></i>
             <i data-key="ArrowRight" class="fa-solid fa-arrow-right-long"></i>
             <i data-key="ArrowDown" class="fa-solid fa-arrow-down-long"></i>
         </div>
+        -->
+    </div>
+    <!--
+    <div style="padding: 10px;"></div>
+
+    <div class="detalhesGeral">
+        <div class="dadosUsuario">
+            <span class="textDefault">NickName</span>
+            <input type="text" name="NickName" placeholder="Informe seu NICK" id="txtNickName" class="inputNickName">
+            <button type="submit" onclick="btnOKClick()" class="button" > Salvar </button>
+        </div>
+        <div style="padding: 10px;"></div>
+        <div class="wrapperRanking">
+            <div class="ranking-details">
+                <span class="textDefault">Ranking</span>
+            </div>
+            <div class="play-ranking">    
+                        
+            </div>
+        </div>
     </div>
 
+    
+    <script src="ranking.js"></script>    
+    -->
     <script src="index.js"></script>
 </body>
 </html> 

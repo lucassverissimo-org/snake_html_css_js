@@ -16,15 +16,15 @@ const controls = document.querySelectorAll(".controls i");
 
 let gameOver = false;
 let foodX, foodY;
-let snakeX = 5,
-  snakeY = 5;
+let snakeX = 15,
+  snakeY = 15;
 let velocityX = 0,
   velocityY = 0;
 let snakeBody = []; //mockCobra();
 let setIntervalId;
 let score = 0;
 let pause = false;
-let isFacil = true;
+let isEasy = true;
 
 // Obter a maior pontuação do local storage
 
@@ -73,7 +73,7 @@ const changeDirection = (e) => {
   } else if (e.key === "ArrowRight" && velocityX != -1) {
     velocityX = 1;
     velocityY = 0;
-  } else if (e.key === "p" && isFacil) {
+  } else if (e.key === "p" && isEasy) {
     velocityX = 0;
     velocityY = 0;
     pause = true;
@@ -100,7 +100,7 @@ const initGame = () => {
   if (localStorageDificulty == "facil" && difficultySelect.selectedIndex == 1) {
     difficultySelect.selectedIndex = 0;
   }
-  isFacil =
+  isEasy =
     difficultySelect.options[difficultySelect.selectedIndex].id == "facil";
 
   // quando a cobra comer a comida
@@ -119,22 +119,21 @@ const initGame = () => {
   snakeX += velocityX;
   snakeY += velocityY;
 
-  for (let i = snakeBody.length - 1; i > 0; i--) {
-    snakeBody[i] = snakeBody[i - 1];
-  }
+  console.log("velocityX", velocityX);
+  console.log("velocityY", velocityY);
+  
 
-  snakeBody[0] = [snakeX, snakeY];
-
-  if (isFacil) {
+  if (isEasy) {
     // libera as paredes
     playBoard.style.border = "none";
-    if (snakeX <= 0) {
+    
+    if (snakeX < 1) {
       snakeX = 30;
     }
     if (snakeX > 30) {
       snakeX = 0;
     }
-    if (snakeY <= 0) {
+    if (snakeY < 1) {
       snakeY = 30;
     }
     if (snakeY > 30) {
@@ -145,19 +144,26 @@ const initGame = () => {
     // verificando se a cobra bateu nas bordas
     playBoard.style.border = "solid 2px #ffffff";
     if (snakeX <= 0 || snakeX > 30 || snakeY <= 0 || snakeY > 30) {
+      console.log("snakeX", snakeX);
+      console.log("snakeY", snakeY);
       return (gameOver = true);
     }
   }
+  
+  for (let i = snakeBody.length - 1; i > 0; i--) {
+    snakeBody[i] = snakeBody[i - 1];
+  }
+  snakeBody[0] = [snakeX, snakeY];
 
   if (!pause) {
     for (let i = 0; i < snakeBody.length; i++) {
       if (i != 0)
         html += `<div class="bodySnake" style="grid-area: ${snakeBody[i][1]} / ${snakeBody[i][0]}"></div>`;
-      else
+      /*else
         html += `<div class="headSnake" style="grid-area: ${snakeBody[i][1]} / ${snakeBody[i][0]}"></div>`;
-
+*/
       // verifica se a cobra bateu nela mesma
-      if (!isFacil) {
+      if (!isEasy) {
         if (
           i !== 0 &&
           snakeBody[0][1] === snakeBody[i][1] &&
