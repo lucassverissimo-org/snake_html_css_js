@@ -29,7 +29,7 @@ let isEasy = true;
 // Obter a maior pontuação do local storage
 
 let highScore = localStorage.getItem("high-score") || 0;
-highScoreElement.innerText = `Melhor pontuação: ${highScore}`;
+highScoreElement.innerText = `Best Score: ${highScore}`;
 
 // Atualizar a posição da comida randomicamente
 const updateFoodPosition = () => {
@@ -111,8 +111,8 @@ const initGame = () => {
     highScore = score >= highScore ? score : highScore;
 
     localStorage.setItem("high-score", highScore);
-    scoreElement.innerText = `Pontuação: ${score}`;
-    highScoreElement.innerText = `Melhor Pontuação: ${highScore}`;
+    scoreElement.innerText = `Score: ${score}`;
+    highScoreElement.innerText = `Best Score: ${highScore}`;
   }
 
   // atualizar tamanho da cobra
