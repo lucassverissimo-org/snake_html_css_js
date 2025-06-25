@@ -119,10 +119,6 @@ const initGame = () => {
   snakeX += velocityX;
   snakeY += velocityY;
 
-  console.log("velocityX", velocityX);
-  console.log("velocityY", velocityY);
-  
-
   if (isEasy) {
     // libera as paredes
     playBoard.style.border = "none";
@@ -143,9 +139,7 @@ const initGame = () => {
     // bloqueia as paredes
     // verificando se a cobra bateu nas bordas
     playBoard.style.border = "solid 2px #ffffff";
-    if (snakeX <= 0 || snakeX > 30 || snakeY <= 0 || snakeY > 30) {
-      console.log("snakeX", snakeX);
-      console.log("snakeY", snakeY);
+    if (snakeX <= 0 || snakeX > 30 || snakeY <= 0 || snakeY > 30) {      
       return (gameOver = true);
     }
   }
