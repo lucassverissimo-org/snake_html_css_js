@@ -64,6 +64,9 @@ body{
     border: 1px solid #bdd847;
 }
 
+.play-board:focus {
+  outline: none;
+}
 .controls{
     display: none;
     justify-content: space-between;    
@@ -178,7 +181,8 @@ body{
     height: 90%;
     width: 100%;
     display: grid;
-    background: #336977;    
+    background: #336977;   
+    overflow: auto; 
 }
 
 .lista{

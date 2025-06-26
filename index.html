@@ -1,63 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
     <title>Snake Game - Lucas Veríssimo</title>
-</head>
-<body>
-    
+  </head>
+  <body>
     <div class="wrapperGame">
-        <div class="game-details">
-            <span class="score textDefault">Score: 0</span>
-            <span class="difficulty">
-                <span class="textDefault">
-                    Mode: 
-                </span>
-                <select id="selectDificulty" onchange="changeDificult()">
-                    <option value="easy" id="facil">Easy</option>
-                    <option value="easy" id="dificil">Hard</option>
-                </select>
-            </span>
-            <span class="high-score textDefault">Best Score: 0</span>
-        </div>
-        
-        <div id="play" class="play-board"></div>
-        <!--
-        <div class="controls">
-            <i data-key="ArrowLeft" class="fa-solid fa-arrow-left-long"></i>
-            <i data-key="ArrowUp" class="fa-solid fa-arrow-up-long"></i>
-            <i data-key="ArrowRight" class="fa-solid fa-arrow-right-long"></i>
-            <i data-key="ArrowDown" class="fa-solid fa-arrow-down-long"></i>
-        </div>
-        -->
-    </div>
-    <!--
-    <div style="padding: 10px;"></div>
+      <div class="game-details">
+        <span class="score textDefault">Score: 0</span>
+        <span class="difficulty">
+          <label class="textDefault">
+            <input type="radio" name="mode" value="facil" id="facil" /> Easy
+          </label>
+          <label class="textDefault" style="margin-left: 10px">
+            <input type="radio" name="mode" value="dificil" id="dificil" /> Hard
+          </label>
+        </span>
+        <span class="high-score textDefault">Best Score: 0</span>
+      </div>
 
+      <div id="play" class="play-board" tabindex="0"></div>      
+    </div>
     <div class="detalhesGeral">
-        <div class="dadosUsuario">
-            <span class="textDefault">NickName</span>
-            <input type="text" name="NickName" placeholder="Informe seu NICK" id="txtNickName" class="inputNickName">
-            <button type="submit" onclick="btnOKClick()" class="button" > Salvar </button>
-        </div>
-        <div style="padding: 10px;"></div>
-        <div class="wrapperRanking">
-            <div class="ranking-details">
-                <span class="textDefault">Ranking</span>
-            </div>
-            <div class="play-ranking">    
-                        
-            </div>
-        </div>
-    </div>
+      <div class="dadosUsuario">
+        <span class="textDefault">NickName</span>
+        <input
+          type="text"
+          id="txtNickName"
+          class="inputNickName"
+          placeholder="Informe seu nick" />
+        <button onclick="salvarNick()" class="button">Salvar</button>
+      </div>
 
-    
-    <script src="ranking.js"></script>    
-    -->
+      <div style="padding: 10px"></div>
+
+      <div class="wrapperRanking">
+        <div class="ranking-details">
+          <span class="textDefault">Ranking (Top 20)</span>
+        </div>
+        <div class="play-ranking"></div>
+      </div>
+    </div>
+    <script src="env.js"></script>
     <script src="index.js"></script>
-</body>
-</html> 
+  </body>
+</html>

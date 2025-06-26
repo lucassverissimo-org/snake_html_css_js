@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "generate-env": "node scripts/generate-env.js",
+    "build": "npm run generate-env",
+    "start": "npm run generate-env && npx serve ."
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  }
+}
