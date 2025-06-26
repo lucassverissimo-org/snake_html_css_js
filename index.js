@@ -2,9 +2,11 @@
 const playBoard = document.querySelector(".play-board");
 const scoreElement = document.querySelector(".score");
 const highScoreElt = document.querySelector(".high-score");
-const radioFacil  = document.getElementById("facil");
+const radioFacil = document.getElementById("facil");
 const radioDificil = document.getElementById("dificil");
-
+let nextDirX = 0;
+let nextDirY = 0;
+const dirQueue = [];
 
 let gameOver = false,
   pause = false,
@@ -42,18 +44,23 @@ function newFood() {
 
 /* -------- ranking helpers -------- */
 async function loadRanking() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/ranking?select=nick,score&order=score.desc&limit=20`, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/ranking?select=nick,score&order=score.desc&limit=20`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+      },
     }
-  });
+  );
   const data = await res.json();
   let html = '<div class="lista">';
   data.forEach((r, i) => {
-    html += `<div class="itemLista textDefault">${i + 1}. ${r.nick} — ${r.score}</div>`;
+    html += `<div class="itemLista textDefault">${i + 1}. ${r.nick} — ${
+      r.score
+    }</div>`;
   });
-  html += '</div>';
+  html += "</div>";
   playRanking.innerHTML = html;
 }
 
@@ -64,16 +71,16 @@ async function saveToRanking(nick, score) {
       apikey: SUPABASE_KEY,
       Authorization: `Bearer ${SUPABASE_KEY}`,
       "Content-Type": "application/json",
-      Prefer: "return=representation"
+      Prefer: "return=representation",
     },
-    body: JSON.stringify({ nick, score })
+    body: JSON.stringify({ nick, score }),
   });
   if (res.ok) loadRanking();
 }
 
 /* -------- game over -------- */
 function handleGameOver() {
-  clearInterval(loopId);
+  clearInterval(loopId);  
 
   if (score > 0) {
     let nick =
@@ -92,13 +99,18 @@ function handleGameOver() {
   alert("Você perdeu! Pressione OK para recomeçar.");
   resetGame();
 }
-function wrapPosition(v){
+function wrapPosition(v) {
   if (v < 1) return 30;
   if (v > 30) return 1;
   return v;
 }
 /* -------- reset -------- */
 function resetGame() {
+  dirQueue.length = 0;
+  nextDirX = 0;
+  nextDirY = 0;
+  velX = 0;
+  velY = 0;
   gameOver = false;
   score = 0;
   snakeBody = [];
@@ -122,26 +134,48 @@ function salvarNick() {
 
 /* -------- change direction -------- */
 function changeDir(e) {
+  const map = {
+    ArrowUp: { x: 0, y: -1 },
+    ArrowDown: { x: 0, y: 1 },
+    ArrowLeft: { x: -1, y: 0 },
+    ArrowRight: { x: 1, y: 0 },
+  };
+
   if (e.key === "p") {
     pause = !pause;
     return;
   }
 
-  const key = e.key;
-  if (
-    (key === "ArrowUp" && velY !== 1) ||
-    (key === "ArrowDown" && velY !== -1) ||
-    (key === "ArrowLeft" && velX !== 1) ||
-    (key === "ArrowRight" && velX !== -1)
-  ) {
-    velX = key === "ArrowLeft" ? -1 : key === "ArrowRight" ? 1 : 0;
-    velY = key === "ArrowUp" ? -1 : key === "ArrowDown" ? 1 : 0;
-  }
+  const cand = map[e.key];
+  if (!cand) return; // tecla fora do mapa
+
+  // Qual foi a última direção válida na fila (ou a atual se fila vazia)?
+  const last = dirQueue.length
+    ? dirQueue[dirQueue.length - 1]
+    : { x: nextDirX, y: nextDirY };
+
+  // Ignora se é a mesma ou oposta
+  const same = cand.x === last.x && cand.y === last.y;
+  const opposite = cand.x === -last.x && cand.y === -last.y;
+  if (same || opposite) return;
+
+  dirQueue.push(cand); // coloca na fila
 }
 
 /* -------- main loop -------- */
 function updateGame() {
-  if (gameOver || pause) return;
+  if (gameOver || pause) {
+    return;
+  }
+
+  if (dirQueue.length) {
+    const { x, y } = dirQueue.shift(); // pega a próxima
+    nextDirX = x;
+    nextDirY = y;
+  }
+
+  velX = nextDirX;
+  velY = nextDirY;
 
   /* comeu comida */
   if (snakeX === foodX && snakeY === foodY) {
@@ -185,11 +219,11 @@ function updateGame() {
     const cls = i === 0 ? "headSnake" : "bodySnake";
     html += `<div class="${cls}" style="grid-area:${y}/${x}"></div>`;
   });
-  playBoard.innerHTML = html;
+  playBoard.innerHTML = html;  
 }
 
 /* -------- init -------- */
-function init() {  
+function init() {
   isEasy = localStorage.getItem("dificulty") !== "dificil";
   if (radioFacil) radioFacil.checked = isEasy;
   if (radioDificil) radioDificil.checked = !isEasy;
@@ -206,7 +240,7 @@ radioFacil.addEventListener("change", () => {
     isEasy = true;
     localStorage.setItem("dificulty", "facil");
     resetGame();
-    playBoard.focus();          // <-- tira o foco do radio
+    playBoard.focus(); // <-- tira o foco do radio
   }
 });
 
@@ -215,7 +249,7 @@ radioDificil.addEventListener("change", () => {
     isEasy = false;
     localStorage.setItem("dificulty", "dificil");
     resetGame();
-    playBoard.focus();          // <-- tira o foco do radio
+    playBoard.focus(); // <-- tira o foco do radio
   }
 });
 document.addEventListener("keydown", changeDir);
