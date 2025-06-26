@@ -20,10 +20,6 @@ let snakeBody = [];
 let loopId = null,
   score = 0;
 
-/* ---------- high-score individual ---------- */
-let highScore = +localStorage.getItem("high-score") || 0;
-highScoreElt.innerText = `Best Score: ${highScore}`;
-
 /* ---------- ranking ---------- */
 const RANK_KEY = "snake-ranking";
 let ranking = JSON.parse(localStorage.getItem(RANK_KEY) || "[]"); // [{nick,score}]
@@ -45,7 +41,7 @@ function newFood() {
 /* -------- ranking helpers -------- */
 async function loadRanking() {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/ranking?select=nick,score&order=score.desc&limit=20`,
+    `${SUPABASE_URL}/rest/v1/ranking?select=nick,score&order=score.desc&limit=10`,
     {
       headers: {
         apikey: SUPABASE_KEY,
@@ -64,6 +60,28 @@ async function loadRanking() {
   playRanking.innerHTML = html;
 }
 
+async function loadPlayerBest() {
+  if (!playerNick) {
+    highScoreElt.innerText = "Best Score: 0";
+    return 0;
+  }
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/ranking?nick=eq.${encodeURIComponent(
+      playerNick
+    )}&select=score&order=score.desc&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+      },
+    }
+  );
+  const rows = await res.json();
+  const best = rows.length ? rows[0].score : 0;
+  highScoreElt.innerText = `Best Score: ${best}`;
+  return best;
+}
+
 async function saveToRanking(nick, score) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/ranking`, {
     method: "POST",
@@ -75,7 +93,11 @@ async function saveToRanking(nick, score) {
     },
     body: JSON.stringify({ nick, score }),
   });
-  if (res.ok) loadRanking();
+  if (res.ok){
+   loadRanking();
+   await loadPlayerBest()
+  }
+    
 }
 
 /* -------- game over -------- */
@@ -124,10 +146,11 @@ function resetGame() {
 }
 
 /* -------- nick button -------- */
-function salvarNick() {
+async function salvarNick() {
   playerNick = (nickInput.value || "").trim();
   if (playerNick) {
     localStorage.setItem("snake-nick", playerNick);
+    await loadPlayerBest();
     alert("Nick salvo!");
   }
 }
@@ -181,11 +204,8 @@ function updateGame() {
   if (snakeX === foodX && snakeY === foodY) {
     newFood();
     snakeBody.push([snakeX, snakeY]);
-    score++;
-    highScore = Math.max(score, highScore);
-    scoreElement.innerText = `Score: ${score}`;
-    highScoreElt.innerText = `Best Score: ${highScore}`;
-    localStorage.setItem("high-score", highScore);
+    score++;    
+    scoreElement.innerText = `Score: ${score}`;    
   }
 
   /* move corpo */
@@ -223,12 +243,13 @@ function updateGame() {
 }
 
 /* -------- init -------- */
-function init() {
+async function init() {
   isEasy = localStorage.getItem("dificulty") !== "dificil";
   if (radioFacil) radioFacil.checked = isEasy;
   if (radioDificil) radioDificil.checked = !isEasy;
 
   if (nickInput && playerNick) nickInput.value = playerNick;
+  await loadPlayerBest();
 
   newFood();
   loadRanking();
