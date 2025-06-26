@@ -11,8 +11,10 @@
     <title>Snake Game - Lucas Veríssimo</title>
   </head>
   <body>
+    <div id="msg" class="game-msg"></div>
     <div class="wrapperGame">
       <div class="game-details">
+        <span class="sound-toggle textDefault" onclick="toggleSound()">🔊</span>
         <span class="score textDefault">Score: 0</span>
         <span class="difficulty">
           <label class="textDefault">
@@ -35,7 +37,7 @@
           id="txtNickName"
           class="inputNickName"
           placeholder="Informe seu nick" />
-        <button onclick="salvarNick()" class="button">Salvar</button>
+        <button onclick="salvarNick()" class="button"><i class="fa fa-save"></i> Salvar</button>        
       </div>
 
       <div style="padding: 10px"></div>

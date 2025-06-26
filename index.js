@@ -7,6 +7,26 @@ const radioDificil = document.getElementById("dificil");
 let nextDirX = 0;
 let nextDirY = 0;
 const dirQueue = [];
+const sndComida = new Audio("assets/sounds/pop.mp3");
+const sndGameOver = new Audio("assets/sounds/gameover.mp3");
+
+const msgBox = document.getElementById("msg");
+let msgTimer=null;
+function showMsg(text, ms=2000){
+  clearTimeout(msgTimer);
+  msgBox.textContent=text;
+  msgBox.classList.add("show");
+  msgTimer=setTimeout(()=>msgBox.classList.remove("show"), ms);
+}
+
+let soundOn = true;
+const soundToggleBtn = document.querySelector(".sound-toggle");
+
+function toggleSound() {
+  soundOn = !soundOn;
+  soundToggleBtn.textContent = soundOn ? "🔊" : "🔇";
+  localStorage.setItem("sound", soundOn ? "on" : "off");
+}
 
 let gameOver = false,
   pause = false,
@@ -99,16 +119,23 @@ async function saveToRanking(nick, score) {
   }
     
 }
-
+function animacaoGameOver(){
+  playBoard.classList.add("flash");
+  setTimeout(() => playBoard.classList.remove("flash"), 600);
+  if (soundOn) {
+    sndGameOver.currentTime = 0;
+    sndGameOver.play();
+  }
+}
 /* -------- game over -------- */
-function handleGameOver() {
+function handleGameOver() {  
   clearInterval(loopId);  
-
+  animacaoGameOver();
   if (score > 0) {
     let nick =
       playerNick ||
       prompt("Digite seu nick para salvar no ranking:") ||
-      "Anônimo";
+      "SALSICHA";
     saveToRanking(nick.trim(), score);
     if (!playerNick) {
       // guarda nick p/ próximas vezes
@@ -118,7 +145,7 @@ function handleGameOver() {
     }
   }
 
-  alert("Você perdeu! Pressione OK para recomeçar.");
+  showMsg("Você perdeu! Pressione OK para recomeçar.");
   resetGame();
 }
 function wrapPosition(v) {
@@ -151,7 +178,7 @@ async function salvarNick() {
   if (playerNick) {
     localStorage.setItem("snake-nick", playerNick);
     await loadPlayerBest();
-    alert("Nick salvo!");
+    showMsg("Nick salvo!");
   }
 }
 
@@ -185,6 +212,15 @@ function changeDir(e) {
   dirQueue.push(cand); // coloca na fila
 }
 
+function animacaoComida(){
+    scoreElement.classList.add("score-bump");
+    setTimeout(() => scoreElement.classList.remove("score-bump"), 100);
+    if (soundOn) {
+      sndComida.currentTime = 0;
+      sndComida.play();
+    }
+}
+
 /* -------- main loop -------- */
 function updateGame() {
   if (gameOver || pause) {
@@ -202,7 +238,8 @@ function updateGame() {
 
   /* comeu comida */
   if (snakeX === foodX && snakeY === foodY) {
-    newFood();
+    newFood();    
+    animacaoComida()
     snakeBody.push([snakeX, snakeY]);
     score++;    
     scoreElement.innerText = `Score: ${score}`;    
@@ -247,10 +284,11 @@ async function init() {
   isEasy = localStorage.getItem("dificulty") !== "dificil";
   if (radioFacil) radioFacil.checked = isEasy;
   if (radioDificil) radioDificil.checked = !isEasy;
+  soundOn = localStorage.getItem("sound") !== "off";
+  if (soundToggleBtn) soundToggleBtn.textContent = soundOn ? "🔊" : "🔇";
 
   if (nickInput && playerNick) nickInput.value = playerNick;
   await loadPlayerBest();
-
   newFood();
   loadRanking();
   loopId = setInterval(updateGame, 100);
