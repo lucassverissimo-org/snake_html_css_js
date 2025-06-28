@@ -43,6 +43,7 @@ let pauseCount = 0;
 let pauseLimit = 3;
 let nextDirX = 0;
 let nextDirY = 0;
+let blinkSegmentIndex = -1;
 
 const RANK_KEY = "snake-ranking";
 let ranking = JSON.parse(localStorage.getItem(RANK_KEY) || "[]");
@@ -253,12 +254,26 @@ function changeDir(e) {
 function animacaoComida() {
   scoreElement.classList.add("score-bump");
   setTimeout(() => scoreElement.classList.remove("score-bump"), 100);
+
+  const blinkIndex = snakeBody.length - 1;
+  blinkSegmentIndex = blinkIndex;
+
+  setTimeout(() => {
+    blinkSegmentIndex = -1;
+  }, 900);
+
   if (soundOn) {
     sndComida.currentTime = 0;
     sndComida.play();
-  }
+  }  
 }
-
+function getHeadDirection() {
+  if (velX === 1) return "right";
+  if (velX === -1) return "left";
+  if (velY === 1) return "down";
+  if (velY === -1) return "up";
+  return "";
+}
 function updateGame() {
   if (gameOver || pause) {
     return;
@@ -276,10 +291,10 @@ function updateGame() {
   /* comeu comida */
   if (snakeX === foodX && snakeY === foodY) {
     newFood();
-    animacaoComida();
     snakeBody.push([snakeX, snakeY]);
     score++;
     scoreElement.innerText = `Score: ${score}`;
+    animacaoComida();
   }
 
   /* move corpo */
@@ -309,7 +324,8 @@ function updateGame() {
 
   let html = `<div class="food" style="grid-area:${foodY}/${foodX}"></div>`;
   snakeBody.forEach(([x, y], i) => {
-    const cls = i === 0 ? "headSnake" : "bodySnake";
+    let cls = i === 0 ? `headSnake head-${getHeadDirection()}` : "bodySnake";
+    if (i === blinkSegmentIndex) cls += " blink-food";
     html += `<div class="${cls}" style="grid-area:${y}/${x}"></div>`;
   });
   playBoard.innerHTML = html;

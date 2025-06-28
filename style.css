@@ -56,8 +56,48 @@ body{
     background: #e9750a;    
 }
 
-.play-board .headSnake{
-    background: #bdd847;
+.play-board .headSnake {
+  background: #bdd847;
+  z-index: 9999;
+  border-radius: 30%;
+  position: relative;
+}
+
+.play-board .headSnake::before,
+.play-board .headSnake::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #000;
+  border-radius: 50%;
+  top: 4px;
+}
+
+.play-board .headSnake::before {
+  left: 4px;
+}
+
+.play-board .headSnake::after {
+  right: 4px;
+}
+
+.headSnake {
+  transition: transform 0.1s;
+}
+
+.head-up { transform: rotate(0deg); }
+.head-right { transform: rotate(90deg); }
+.head-down { transform: rotate(180deg); }
+.head-left { transform: rotate(270deg); }
+
+@keyframes blinkFood {
+  0%, 100% { background-color: #95aa38; }
+  50% { background-color: #e9750a; }
+}
+
+.blink-food {
+  animation: blinkFood 0.3s ease-in-out 1;
 }
 
 .play-board .bodySnake{
@@ -124,7 +164,7 @@ body{
   border-radius: 5px;
   box-shadow: 0 20px 40px rgba(220, 52, 52, 0.2);
   padding: 12px;
-  margin: 10px auto;
+  margin: 10px;
   align-items: center;
 }
 .dadosUsuario{
