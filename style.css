@@ -464,3 +464,11 @@ body{
   color: #88c0d0;
 }
 
+.ranking-aviso {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  color: #f1c40f;
+  background-color: #2b3e50;
+  border-bottom: 1px solid #446;
+  display: none;
+}

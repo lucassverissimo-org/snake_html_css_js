@@ -16,6 +16,11 @@ function showMsg(text, ms = 2000) {
   msgTimer = setTimeout(() => msgBox.classList.remove("show"), ms);
 }
 
+function atualizarVisibilidadeRanking() {
+  const aviso = document.getElementById("rankingAviso");
+  if (aviso) aviso.style.display = isEasy ? "block" : "none";
+}
+
 async function switchRanking(tab) {
   document
     .querySelectorAll(".ranking-tab")
@@ -409,7 +414,7 @@ async function init() {
   if (nickInput && playerNick) nickInput.value = playerNick;
   await loadPlayerBest();
   newFood();
-  switchRanking("geral");
+  switchRanking(currentRankingTab);
   loopId = setInterval(updateGame, 100);
   if (nickInput) {
     nickInput.addEventListener("blur", async () => {
@@ -421,6 +426,8 @@ async function init() {
     }
   });
   }
+  atualizarVisibilidadeRanking();
+
 }
 
 radioFacil.addEventListener("change", () => {
@@ -428,6 +435,7 @@ radioFacil.addEventListener("change", () => {
     isEasy = true;
     localStorage.setItem("dificulty", "facil");
     resetGame();
+    atualizarVisibilidadeRanking();
     playBoard.focus();
   }
 });
@@ -437,6 +445,7 @@ radioDificil.addEventListener("change", () => {
     isEasy = false;
     localStorage.setItem("dificulty", "dificil");
     resetGame();
+    atualizarVisibilidadeRanking();
     playBoard.focus();
   }
 });
