@@ -14,30 +14,39 @@
     <div id="msg" class="game-msg"></div>
     <div class="wrapperGame">
       <div class="game-details">
-        <span class="sound-toggle textDefault" onclick="toggleSound()">🔊</span>
         <span class="score textDefault">Score: 0</span>
-        <span class="difficulty">
-          <label class="textDefault">
-            <input type="radio" name="mode" value="facil" id="facil" /> Easy
-          </label>
-          <label class="textDefault" style="margin-left: 10px">
-            <input type="radio" name="mode" value="dificil" id="dificil" /> Hard
-          </label>
-        </span>
         <span class="high-score textDefault">Best Score: 0</span>
       </div>
 
-      <div id="play" class="play-board" tabindex="0"></div>      
+      <div id="play" class="play-board" tabindex="0"></div>
     </div>
     <div class="detalhesGeral">
       <div class="dadosUsuario">
-        <span class="textDefault">NickName</span>
-        <input
-          type="text"
-          id="txtNickName"
-          class="inputNickName"
-          placeholder="Informe seu nick" />
-        <button onclick="salvarNick()" class="button"><i class="fa fa-save"></i> Salvar</button>        
+        <div class="nickname-wrapper">
+          <label for="txtNickName" class="nickname-label">Nickname</label>
+          <input
+            type="text"
+            id="txtNickName"
+            class="inputNickName"
+            placeholder="Informe seu nick" />
+        </div>
+        <div class="difficulty-options">
+          <label>
+            <input type="radio" name="mode" value="facil" id="facil" /> Easy
+          </label>
+          <label>
+            <input type="radio" name="mode" value="dificil" id="dificil" /> Hard
+          </label>
+        </div>
+
+        <div class="user-controls">
+          <button id="pauseBtn" class="pause-button" title="Pausar Jogo">
+            ⏸️
+          </button>
+          <span class="sound-toggle" onclick="toggleSound()" title="Som"
+            >🔊</span
+          >
+        </div>
       </div>
 
       <div style="padding: 10px"></div>

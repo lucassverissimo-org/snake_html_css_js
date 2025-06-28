@@ -1,22 +1,19 @@
-/* ==================  SNAKE  ================== */
 const playBoard = document.querySelector(".play-board");
 const scoreElement = document.querySelector(".score");
 const highScoreElt = document.querySelector(".high-score");
 const radioFacil = document.getElementById("facil");
 const radioDificil = document.getElementById("dificil");
-let nextDirX = 0;
-let nextDirY = 0;
-const dirQueue = [];
 const sndComida = new Audio("assets/sounds/pop.mp3");
 const sndGameOver = new Audio("assets/sounds/gameover.mp3");
+const dirQueue = [];
 
 const msgBox = document.getElementById("msg");
-let msgTimer=null;
-function showMsg(text, ms=2000){
+let msgTimer = null;
+function showMsg(text, ms = 2000) {
   clearTimeout(msgTimer);
-  msgBox.textContent=text;
+  msgBox.textContent = text;
   msgBox.classList.add("show");
-  msgTimer=setTimeout(()=>msgBox.classList.remove("show"), ms);
+  msgTimer = setTimeout(() => msgBox.classList.remove("show"), ms);
 }
 
 let soundOn = true;
@@ -28,29 +25,33 @@ function toggleSound() {
   localStorage.setItem("sound", soundOn ? "on" : "off");
 }
 
-let gameOver = false,
-  pause = false,
-  isEasy = true;
+let gameOver = false;
+let pause = false;
+let isEasy = true;
 let foodX, foodY;
-let snakeX = 15,
-  snakeY = 15;
-let velX = 0,
-  velY = 0;
+let snakeX = 15;
+let snakeY = 15;
+let velX = 0;
+let velY = 0;
 let snakeBody = [];
-let loopId = null,
-  score = 0;
+let loopId = null;
+let score = 0;
+let startTime = null;
+let endTime = null;
+let gameTime = 0;
+let pauseCount = 0;
+let pauseLimit = 3;
+let nextDirX = 0;
+let nextDirY = 0;
 
-/* ---------- ranking ---------- */
 const RANK_KEY = "snake-ranking";
-let ranking = JSON.parse(localStorage.getItem(RANK_KEY) || "[]"); // [{nick,score}]
+let ranking = JSON.parse(localStorage.getItem(RANK_KEY) || "[]");
 const playRanking = document.querySelector(".play-ranking");
 const nickInput = document.getElementById("txtNickName");
 let playerNick = localStorage.getItem("snake-nick") || "";
 
-/* -------- utils -------- */
 const randPos = () => Math.floor(Math.random() * 30) + 1;
 
-/* -------- food position -------- */
 function newFood() {
   do {
     foodX = randPos();
@@ -58,10 +59,22 @@ function newFood() {
   } while (snakeBody.some(([x, y]) => x === foodX && y === foodY));
 }
 
-/* -------- ranking helpers -------- */
+function formatTime(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  let result = "";
+
+  if (h > 0) result += `${h}h:`;
+  if (m > 0 || h > 0) result += `${String(m).padStart(2, "0")}m:`;
+  result += `${String(s).padStart(2, "0")}s`;
+
+  return result;
+}
+
 async function loadRanking() {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/ranking?select=nick,score&order=score.desc&limit=10`,
+    `${SUPABASE_URL}/rest/v1/ranking?select=nick,score,tempo&order=score.desc&limit=10`,
     {
       headers: {
         apikey: SUPABASE_KEY,
@@ -70,13 +83,26 @@ async function loadRanking() {
     }
   );
   const data = await res.json();
-  let html = '<div class="lista">';
+  let html = `
+  <div class="lista headerLista textDefault">
+    <div class="col pos">#</div>
+    <div class="col nick">Nick</div>
+    <div class="col score">Pts</div>
+    <div class="col tempo">Tempo</div>
+  </div>
+`;
+
   data.forEach((r, i) => {
-    html += `<div class="itemLista textDefault">${i + 1}. ${r.nick} — ${
-      r.score
-    }</div>`;
+    const tempoFormatado = formatTime(parseInt(r.tempo || 0));
+    html += `
+    <div class="lista itemLista textDefault">
+      <div class="col pos">${i + 1}</div>
+      <div class="col nick">${r.nick}</div>
+      <div class="col score">${r.score}</div>
+      <div class="col tempo">${tempoFormatado}</div>
+    </div>
+  `;
   });
-  html += "</div>";
   playRanking.innerHTML = html;
 }
 
@@ -111,15 +137,14 @@ async function saveToRanking(nick, score) {
       "Content-Type": "application/json",
       Prefer: "return=representation",
     },
-    body: JSON.stringify({ nick, score }),
+    body: JSON.stringify({ nick, score, tempo: gameTime }),
   });
-  if (res.ok){
-   loadRanking();
-   await loadPlayerBest()
+  if (res.ok) {
+    loadRanking();
+    await loadPlayerBest();
   }
-    
 }
-function animacaoGameOver(){
+function animacaoGameOver() {
   playBoard.classList.add("flash");
   setTimeout(() => playBoard.classList.remove("flash"), 600);
   if (soundOn) {
@@ -127,9 +152,11 @@ function animacaoGameOver(){
     sndGameOver.play();
   }
 }
-/* -------- game over -------- */
-function handleGameOver() {  
-  clearInterval(loopId);  
+
+function handleGameOver() {
+  clearInterval(loopId);
+  endTime = new Date();
+  gameTime = Math.floor((endTime - startTime) / 1000);
   animacaoGameOver();
   if (score > 0) {
     let nick =
@@ -138,7 +165,6 @@ function handleGameOver() {
       "SALSICHA";
     saveToRanking(nick.trim(), score);
     if (!playerNick) {
-      // guarda nick p/ próximas vezes
       playerNick = nick.trim();
       localStorage.setItem("snake-nick", playerNick);
       if (nickInput) nickInput.value = playerNick;
@@ -153,8 +179,9 @@ function wrapPosition(v) {
   if (v > 30) return 1;
   return v;
 }
-/* -------- reset -------- */
+
 function resetGame() {
+  startTime = new Date();
   dirQueue.length = 0;
   nextDirX = 0;
   nextDirY = 0;
@@ -169,10 +196,11 @@ function resetGame() {
   scoreElement.innerText = "Score: 0";
   newFood();
   clearInterval(loopId);
+  pauseCount = 0;
+  document.getElementById("pauseBtn").textContent = "⏸️";
   loopId = setInterval(updateGame, 100);
 }
 
-/* -------- nick button -------- */
 async function salvarNick() {
   playerNick = (nickInput.value || "").trim();
   if (playerNick) {
@@ -182,7 +210,19 @@ async function salvarNick() {
   }
 }
 
-/* -------- change direction -------- */
+function togglePause() {
+  if (!pause) {
+    if (!isEasy && pauseCount >= pauseLimit) {
+      showMsg("Limite de pausas atingido no modo Hard!");
+      return;
+    }
+    if (!isEasy) pauseCount++;
+  }
+
+  pause = !pause;
+  document.getElementById("pauseBtn").textContent = pause ? "▶️" : "⏸️";
+}
+
 function changeDir(e) {
   const map = {
     ArrowUp: { x: 0, y: -1 },
@@ -192,43 +232,40 @@ function changeDir(e) {
   };
 
   if (e.key === "p") {
-    pause = !pause;
+    togglePause();
     return;
   }
 
   const cand = map[e.key];
-  if (!cand) return; // tecla fora do mapa
+  if (!cand) return;
 
-  // Qual foi a última direção válida na fila (ou a atual se fila vazia)?
   const last = dirQueue.length
     ? dirQueue[dirQueue.length - 1]
     : { x: nextDirX, y: nextDirY };
 
-  // Ignora se é a mesma ou oposta
   const same = cand.x === last.x && cand.y === last.y;
   const opposite = cand.x === -last.x && cand.y === -last.y;
   if (same || opposite) return;
 
-  dirQueue.push(cand); // coloca na fila
+  dirQueue.push(cand);
 }
 
-function animacaoComida(){
-    scoreElement.classList.add("score-bump");
-    setTimeout(() => scoreElement.classList.remove("score-bump"), 100);
-    if (soundOn) {
-      sndComida.currentTime = 0;
-      sndComida.play();
-    }
+function animacaoComida() {
+  scoreElement.classList.add("score-bump");
+  setTimeout(() => scoreElement.classList.remove("score-bump"), 100);
+  if (soundOn) {
+    sndComida.currentTime = 0;
+    sndComida.play();
+  }
 }
 
-/* -------- main loop -------- */
 function updateGame() {
   if (gameOver || pause) {
     return;
   }
 
   if (dirQueue.length) {
-    const { x, y } = dirQueue.shift(); // pega a próxima
+    const { x, y } = dirQueue.shift();
     nextDirX = x;
     nextDirY = y;
   }
@@ -238,11 +275,11 @@ function updateGame() {
 
   /* comeu comida */
   if (snakeX === foodX && snakeY === foodY) {
-    newFood();    
-    animacaoComida()
+    newFood();
+    animacaoComida();
     snakeBody.push([snakeX, snakeY]);
-    score++;    
-    scoreElement.innerText = `Score: ${score}`;    
+    score++;
+    scoreElement.innerText = `Score: ${score}`;
   }
 
   /* move corpo */
@@ -270,28 +307,31 @@ function updateGame() {
     return handleGameOver();
   }
 
-  /* render */
   let html = `<div class="food" style="grid-area:${foodY}/${foodX}"></div>`;
   snakeBody.forEach(([x, y], i) => {
     const cls = i === 0 ? "headSnake" : "bodySnake";
     html += `<div class="${cls}" style="grid-area:${y}/${x}"></div>`;
   });
-  playBoard.innerHTML = html;  
+  playBoard.innerHTML = html;
 }
 
-/* -------- init -------- */
 async function init() {
   isEasy = localStorage.getItem("dificulty") !== "dificil";
   if (radioFacil) radioFacil.checked = isEasy;
   if (radioDificil) radioDificil.checked = !isEasy;
   soundOn = localStorage.getItem("sound") !== "off";
   if (soundToggleBtn) soundToggleBtn.textContent = soundOn ? "🔊" : "🔇";
-
+  document.getElementById("pauseBtn").addEventListener("click", togglePause);
   if (nickInput && playerNick) nickInput.value = playerNick;
   await loadPlayerBest();
   newFood();
   loadRanking();
   loopId = setInterval(updateGame, 100);
+  if (nickInput) {
+    nickInput.addEventListener("blur", async () => {
+      await salvarNick();
+    });
+  }
 }
 
 radioFacil.addEventListener("change", () => {
@@ -299,7 +339,7 @@ radioFacil.addEventListener("change", () => {
     isEasy = true;
     localStorage.setItem("dificulty", "facil");
     resetGame();
-    playBoard.focus(); // <-- tira o foco do radio
+    playBoard.focus();
   }
 });
 
@@ -308,7 +348,7 @@ radioDificil.addEventListener("change", () => {
     isEasy = false;
     localStorage.setItem("dificulty", "dificil");
     resetGame();
-    playBoard.focus(); // <-- tira o foco do radio
+    playBoard.focus();
   }
 });
 document.addEventListener("keydown", changeDir);
