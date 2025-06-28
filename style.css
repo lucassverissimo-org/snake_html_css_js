@@ -289,14 +289,15 @@ body{
 
 
 .play-ranking {
-  height: 100%;
   width: 100%;
   background: #2b3e50;
-  overflow-y: auto;
   border-radius: 0 0 5px 5px;
   font-size: 0.85rem;
   color: #fff;
-  padding: 0;
+  overflow-y: auto;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .lista {
@@ -305,6 +306,8 @@ body{
   padding: 6px 10px;
   border-bottom: 1px solid #446;
   align-items: center;
+  min-height: 32px;
+  box-sizing: border-box;
 }
 
 .headerLista {
@@ -440,3 +443,24 @@ body{
   margin-right: 4px;
   accent-color: #bdd847;
 }
+
+.ranking-tab {
+  background: none;
+  border: none;
+  color: #b8c6dc;
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: border 0.2s;
+}
+
+.ranking-tab:hover {
+  color: #fff;
+}
+
+.ranking-tab.active {
+  border-bottom: 2px solid #88c0d0;
+  color: #88c0d0;
+}
+

@@ -16,6 +16,22 @@ function showMsg(text, ms = 2000) {
   msgTimer = setTimeout(() => msgBox.classList.remove("show"), ms);
 }
 
+async function switchRanking(tab) {
+  document
+    .querySelectorAll(".ranking-tab")
+    .forEach((btn) => btn.classList.remove("active"));
+  const activeBtn = document.querySelector(`.ranking-tab[onclick*="${tab}"]`);
+  if (activeBtn) activeBtn.classList.add("active");
+
+  if (tab === "geral") {
+    await loadRanking();
+  } else {
+    await loadUserScores();
+  }
+
+  currentRankingTab = tab;
+}
+
 let soundOn = true;
 const soundToggleBtn = document.querySelector(".sound-toggle");
 
@@ -44,6 +60,7 @@ let pauseLimit = 3;
 let nextDirX = 0;
 let nextDirY = 0;
 let blinkSegmentIndex = -1;
+let currentRankingTab = "geral";
 
 const RANK_KEY = "snake-ranking";
 let ranking = JSON.parse(localStorage.getItem(RANK_KEY) || "[]");
@@ -73,6 +90,46 @@ function formatTime(seconds) {
   return result;
 }
 
+async function loadUserScores() {
+  if (!playerNick) {
+    playRanking.innerHTML =
+      "<div class='textDefault' style='padding:10px'>Nenhum nick definido.</div>";
+    return;
+  }
+
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/ranking?nick=eq.${encodeURIComponent(
+      playerNick
+    )}&select=nick,score,tempo&order=score.desc&limit=10`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+      },
+    }
+  );
+  const data = await res.json();
+  let html = `
+    <div class="lista headerLista textDefault">
+      <div class="col pos">#</div>
+      <div class="col nick">Nick</div>
+      <div class="col score">Pontos</div>
+      <div class="col tempo">Tempo</div>
+    </div>
+  `;
+  data.forEach((r, i) => {
+    const tempoFormatado = formatTime(parseInt(r.tempo || 0));
+    html += `
+      <div class="lista itemLista textDefault">
+        <div class="col pos">${i + 1}</div>
+        <div class="col nick">${r.nick}</div>
+        <div class="col score">${r.score}</div>
+        <div class="col tempo">${tempoFormatado}</div>
+      </div>
+    `;
+  });
+  playRanking.innerHTML = html;
+}
 async function loadRanking() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/ranking?select=nick,score,tempo&order=score.desc&limit=10`,
@@ -126,6 +183,7 @@ async function loadPlayerBest() {
   const rows = await res.json();
   const best = rows.length ? rows[0].score : 0;
   highScoreElt.innerText = `Best Score: ${best}`;
+  loadUserScores();
   return best;
 }
 
@@ -141,7 +199,11 @@ async function saveToRanking(nick, score) {
     body: JSON.stringify({ nick, score, tempo: gameTime }),
   });
   if (res.ok) {
-    loadRanking();
+    if (currentRankingTab === "geral") {
+      await loadRanking();
+    } else {
+      await loadUserScores();
+    }
     await loadPlayerBest();
   }
 }
@@ -156,8 +218,11 @@ function animacaoGameOver() {
 
 function handleGameOver() {
   clearInterval(loopId);
+  if (!startTime) {
+    startTime = new Date();
+  }
   endTime = new Date();
-  gameTime = Math.floor((endTime - startTime) / 1000);
+  gameTime = Math.max(0, Math.floor((endTime - startTime) / 1000));
   animacaoGameOver();
   if (score > 0) {
     let nick =
@@ -183,6 +248,8 @@ function wrapPosition(v) {
 
 function resetGame() {
   startTime = new Date();
+  endTime = null;
+  gameTime = 0;
   dirQueue.length = 0;
   nextDirX = 0;
   nextDirY = 0;
@@ -207,6 +274,7 @@ async function salvarNick() {
   if (playerNick) {
     localStorage.setItem("snake-nick", playerNick);
     await loadPlayerBest();
+
     showMsg("Nick salvo!");
   }
 }
@@ -265,7 +333,7 @@ function animacaoComida() {
   if (soundOn) {
     sndComida.currentTime = 0;
     sndComida.play();
-  }  
+  }
 }
 function getHeadDirection() {
   if (velX === 1) return "right";
@@ -341,12 +409,17 @@ async function init() {
   if (nickInput && playerNick) nickInput.value = playerNick;
   await loadPlayerBest();
   newFood();
-  loadRanking();
+  switchRanking("geral");
   loopId = setInterval(updateGame, 100);
   if (nickInput) {
     nickInput.addEventListener("blur", async () => {
       await salvarNick();
     });
+    nickInput.addEventListener("keyup", (e) => {
+    if (e.key === "Enter") {
+      nickInput.blur();
+    }
+  });
   }
 }
 
