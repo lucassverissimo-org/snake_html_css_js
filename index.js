@@ -56,6 +56,7 @@ let velX = 0;
 let velY = 0;
 let snakeBody = [];
 let loopId = null;
+let gameSpeed = 100;
 let score = 0;
 let startTime = null;
 let endTime = null;
@@ -66,6 +67,7 @@ let nextDirX = 0;
 let nextDirY = 0;
 let blinkSegmentIndex = -1;
 let currentRankingTab = "geral";
+let spacePressed = false;
 
 const RANK_KEY = "snake-ranking";
 let ranking = JSON.parse(localStorage.getItem(RANK_KEY) || "[]");
@@ -251,6 +253,11 @@ function wrapPosition(v) {
   return v;
 }
 
+function startGameLoop() {
+  if (loopId) clearInterval(loopId);
+  loopId = setInterval(updateGame, gameSpeed);
+}
+
 function resetGame() {
   startTime = new Date();
   endTime = null;
@@ -271,7 +278,7 @@ function resetGame() {
   clearInterval(loopId);
   pauseCount = 0;
   document.getElementById("pauseBtn").textContent = "⏸️";
-  loopId = setInterval(updateGame, 100);
+  startGameLoop();
 }
 
 async function salvarNick() {
@@ -300,9 +307,13 @@ function togglePause() {
 function changeDir(e) {
   const map = {
     ArrowUp: { x: 0, y: -1 },
+    w: { x: 0, y: -1 },
     ArrowDown: { x: 0, y: 1 },
+    s: { x: 0, y: 1 },
     ArrowLeft: { x: -1, y: 0 },
+    a: { x: -1, y: 0 },
     ArrowRight: { x: 1, y: 0 },
+    d: { x: 1, y: 0 },
   };
 
   if (e.key === "p") {
@@ -415,7 +426,7 @@ async function init() {
   await loadPlayerBest();
   newFood();
   switchRanking(currentRankingTab);
-  loopId = setInterval(updateGame, 100);
+  startGameLoop();
   if (nickInput) {
     nickInput.addEventListener("blur", async () => {
       await salvarNick();
@@ -447,6 +458,20 @@ radioDificil.addEventListener("change", () => {
     resetGame();
     atualizarVisibilidadeRanking();
     playBoard.focus();
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space" && !spacePressed) {
+    spacePressed = true;
+    gameSpeed = 50; // 2x mais rápido
+    startGameLoop();
+  }
+});
+document.addEventListener("keyup", (e) => {
+  if (e.code === "Space" && spacePressed) {
+    spacePressed = false;
+    gameSpeed = 100; // velocidade normal
+    startGameLoop();
   }
 });
 document.addEventListener("keydown", changeDir);
