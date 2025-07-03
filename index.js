@@ -258,8 +258,7 @@ function startGameLoop() {
   loopId = setInterval(updateGame, gameSpeed);
 }
 
-function resetGame() {
-  startTime = new Date();
+function resetGame() {  
   endTime = null;
   gameTime = 0;
   dirQueue.length = 0;
@@ -362,7 +361,11 @@ function updateGame() {
   if (gameOver || pause) {
     return;
   }
-
+  
+  if (!startTime) {
+    startTime = new Date();
+  }
+  
   if (dirQueue.length) {
     const { x, y } = dirQueue.shift();
     nextDirX = x;
