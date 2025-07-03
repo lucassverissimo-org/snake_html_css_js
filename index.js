@@ -45,7 +45,7 @@ function toggleSound() {
   soundToggleBtn.textContent = soundOn ? "🔊" : "🔇";
   localStorage.setItem("sound", soundOn ? "on" : "off");
 }
-
+const VELOCIDADE_NORMAL = 100;
 let gameOver = false;
 let pause = false;
 let isEasy = true;
@@ -56,7 +56,7 @@ let velX = 0;
 let velY = 0;
 let snakeBody = [];
 let loopId = null;
-let gameSpeed = 100;
+let gameSpeed = VELOCIDADE_NORMAL;
 let score = 0;
 let startTime = null;
 let endTime = null;
@@ -463,14 +463,14 @@ radioDificil.addEventListener("change", () => {
 document.addEventListener("keydown", (e) => {
   if (e.code === "Space" && !spacePressed) {
     spacePressed = true;
-    gameSpeed = 50; // 2x mais rápido
+    gameSpeed = 40; 
     startGameLoop();
   }
 });
 document.addEventListener("keyup", (e) => {
   if (e.code === "Space" && spacePressed) {
     spacePressed = false;
-    gameSpeed = 100; // velocidade normal
+    gameSpeed = VELOCIDADE_NORMAL; 
     startGameLoop();
   }
 });

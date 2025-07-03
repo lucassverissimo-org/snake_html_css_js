@@ -54,6 +54,7 @@ body{
 
 .play-board .food{
     background: #e9750a;    
+    border-radius: 30%;
 }
 
 .play-board .headSnake {
@@ -67,11 +68,11 @@ body{
 .play-board .headSnake::after {
   content: "";
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 7px;
   background: #000;
   border-radius: 50%;
-  top: 4px;
+  top: -2px;
 }
 
 .play-board .headSnake::before {
